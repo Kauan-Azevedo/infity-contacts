@@ -36,7 +36,11 @@ export class PhonesController {
   async findAllPhones(): Promise<Phone[]> {
     return this.phoneService.findAllPhones({
       include: {
-        owner: true,
+        owner: {
+          select: {
+            username: true,
+          },
+        },
       },
     });
   }

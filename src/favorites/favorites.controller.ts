@@ -7,10 +7,12 @@ import {
   Put,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { Favorite } from '@prisma/client';
 import { FavoritesService } from './favorites.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { Request } from 'express';
 
 @UseGuards(AuthGuard)
 @Controller('favorites')
@@ -37,10 +39,27 @@ export class FavoritesController {
   }
 
   @Get()
-  async findAllFavorites(): Promise<Favorite[]> {
+  async findAllFavorites(@Req() request: Request): Promise<Favorite[]> {
+    //@ts-expect-error nao vai da erro nao confia
+    const ownerId = request.user.sub;
     return this.favoriteService.findAllFavorites({
+      where: { ownerId: ownerId },
       include: {
-        owner: true,
+        owner: {
+          select: {
+            username: true,
+          },
+        },
+        phone: {
+          select: {
+            number: true,
+            owner: {
+              select: {
+                username: true,
+              },
+            },
+          },
+        },
       },
     });
   }
